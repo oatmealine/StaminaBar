@@ -1,0 +1,20 @@
+modoptions_staminabar_display=Display
+modoptions_staminabar_vanity=Vanity
+
+modoptions_staminabar_squish_desc=How much to squish the bar with the player sprite.{n}A factor of 0 means no squishing, a factor of 10 means to follow the player's scaling.
+modoptions_staminabar_squishoncrouch_desc=Squish the bar when crouched.{n}Helps with giving a clearer crouch state indicator for crouchtech-heavy gameplay.
+modoptions_staminabar_showlosses=Losses
+modoptions_staminabar_showlosses_desc=Signifcant losses of stamina (ie. from climbjumps) are briefly highlighted. 
+modoptions_staminabar_showrefunds=Refunds
+modoptions_staminabar_showrefunds_desc=Refunded stamina (ie. from wallboosts) is briefly highlighted. 
+modoptions_staminabar_showoverdraft=Overdrafted Stamina
+modoptions_staminabar_showoverdraft_desc="Overdrafted" stamina refers to stamina lost below 0.0.
+modoptions_staminabar_showoverclock=Overclocked Stamina
+modoptions_staminabar_showoverclock_desc="Overclocked" stamina refers to stamina refunded above the maximum, ie. from wallboosts.
+modoptions_staminabar_showdanger=Highlight Danger Zone
+modoptions_staminabar_showdanger_desc=Below 20 stamina, your sprite begins flashing red and Madeline becomes "tired".
+
+modoptions_staminabar_overlaycolor_desc=Everything under "vanity" is colored to this color
+modoptions_staminabar_staminaflashcolor_desc=Color to use for the flash when stamina is fully refilled
+modoptions_staminabar_staminadangercolor_desc=The color for stamina when stamina < 20
+modoptions_staminabar_staminadangerrefundcolor_desc=The color of refunds when stamina < 20

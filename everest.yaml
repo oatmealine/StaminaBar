@@ -1,0 +1,6 @@
+- Name: StaminaBar
+  Version: 1.0.0
+  DLL: bin/StaminaBar.dll
+  Dependencies:
+    - Name: EverestCore
+      Version: 1.5577.0
