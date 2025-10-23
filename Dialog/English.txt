@@ -13,6 +13,7 @@ modoptions_staminabar_showoverclock=Overclocked Stamina
 modoptions_staminabar_showoverclock_desc="Overclocked" stamina refers to stamina refunded above the maximum, ie. from wallboosts.
 modoptions_staminabar_showdanger=Highlight Danger Zone
 modoptions_staminabar_showdanger_desc=Below 20 stamina, your sprite begins flashing red and Madeline becomes "tired".
+modoptions_staminabar_upscalefactor_desc=How much to upscale the bar by before shrinking it back, for a FXAA-like antialiasing effect.
 
 modoptions_staminabar_overlaycolor_desc=Everything under "vanity" is colored to this color
 modoptions_staminabar_staminaflashcolor_desc=Color to use for the flash when stamina is fully refilled

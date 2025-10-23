@@ -25,6 +25,24 @@ public class StaminaBarSettings : EverestModuleSettings {
     public PositionSubMenu Position { get; set; } = new();
 
     [SettingSubMenu]
+    public class SizeSubMenu {
+        [SettingRange(min: 0, max: 128)]
+        public int PieOuterRadius { get; set; } = 26;
+        [SettingRange(min: 0, max: 128)]
+        public int PieInnerRadius { get; set; } = 8;
+        [SettingRange(min: 4, max: 64)]
+        public int PieResolution { get; set; } = 30;
+        [SettingRange(min: 0, max: 128)]
+        public int PieOutlineThickness { get; set; } = 3;
+        [SettingRange(min: 0, max: 128)]
+        public int OuterPieThickness { get; set; } = 7;
+        [SettingRange(min: 0, max: 128)]
+        public int OuterPieOutlineThickness { get; set; } = 2;
+    }
+    
+    public SizeSubMenu Size { get; set; } = new();
+
+    [SettingSubMenu]
     public class ColorSubMenu {
         [SettingMinLength(6)]
         [SettingMaxLength(6)]
@@ -88,9 +106,10 @@ public class StaminaBarSettings : EverestModuleSettings {
     public bool ShowOverdraft { get; set; } = true;
     [SettingSubText("modoptions_staminabar_showoverclock_desc")]
     public bool ShowOverclock { get; set; } = true;
+    [SettingSubText("modoptions_staminabar_upscalefactor_desc")]
+    public int UpscaleFactor { get; set; } = 2;
     
     [SettingSubHeader("modoptions_staminabar_vanity")]
-
     public bool Bunny { get; set; } = false;
     public bool Kitty { get; set; } = false;
     public bool Fairy { get; set; } = false;

@@ -6,7 +6,7 @@ using Monocle;
 namespace Celeste.Mod.StaminaBar;
 
 public class ArcPolygon {
-    public readonly int Resolution;
+    public int Resolution;
 
     public float AngleStart = 0f;
     public float AngleEnd = 1f;
@@ -19,6 +19,10 @@ public class ArcPolygon {
     private int[] indices;
     
     public ArcPolygon(int resolution) {
+        SetResolution(resolution);
+    }
+
+    public void SetResolution(int resolution) {
         Resolution = resolution;
         
         vertices = new VertexPositionColor[Resolution * 2];

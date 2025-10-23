@@ -18,12 +18,12 @@ public class StaminaBarEntity : Entity {
     public const float AlphaFadeDuration = .05f;
     public const float FlashDuration = .9f;
 
-    public const float PieOuterRadius = 26f;
-    public const float PieInnerRadius = 8f;
-    public const int PieResolution = 30;
-    public const float PieOutlineThickness = 3f;
-    public const float OuterPieThickness = 7f;
-    public const float OuterPieOutlineThickness = 2f;
+    public float PieOuterRadius;
+    public float PieInnerRadius;
+    public int PieResolution = 30;
+    public float PieOutlineThickness;
+    public float OuterPieThickness;
+    public float OuterPieOutlineThickness;
 
     public Color BackColor;
     public Color OverlayColor;
@@ -51,15 +51,17 @@ public class StaminaBarEntity : Entity {
 
     private float lastStamina = MaxStamina;
     
-    private ArcPolygon backPolygon = new(PieResolution);
-    private ArcPolygon fillPolygon = new(PieResolution);
-    private ArcPolygon refillPolygon = new(PieResolution);
+    private ArcPolygon backPolygon = new(30);
+    private ArcPolygon fillPolygon = new(30);
+    private ArcPolygon refillPolygon = new(30);
     private ArcPolygon dangerBarPolygon = new(3);
-    private ArcPolygon outerPolygon = new(PieResolution);
-    private ArcPolygon outerBackPolygon = new(PieResolution);
+    private ArcPolygon outerPolygon = new(30);
+    private ArcPolygon outerBackPolygon = new(30);
 
-    public const int BufferUpscaleFactor = 2;
-    public const int BufferSize = (int)(PieOuterRadius + PieOutlineThickness * 2 + OuterPieOutlineThickness * 2 + OuterPieThickness) * 2 * BufferUpscaleFactor;
+    public int BufferSize =>
+        (int)(PieOuterRadius + PieOutlineThickness * 2 + OuterPieOutlineThickness * 2 + OuterPieThickness)
+        * 2 * StaminaBar.Settings.UpscaleFactor;
+
     private VirtualRenderTarget buffer;
     
     public StaminaBarEntity(Player player) {
@@ -67,24 +69,6 @@ public class StaminaBarEntity : Entity {
 
         Tag = TagsExt.SubHUD;
         Visible = false;
-
-        backPolygon.OuterRadius = PieOuterRadius + PieOutlineThickness;
-        backPolygon.InnerRadius = PieInnerRadius - PieOutlineThickness;
-
-        fillPolygon.OuterRadius = PieOuterRadius;
-        fillPolygon.InnerRadius = PieInnerRadius;
-        
-        refillPolygon.OuterRadius = PieOuterRadius;
-        refillPolygon.InnerRadius = PieInnerRadius;
-
-        dangerBarPolygon.OuterRadius = PieOuterRadius;
-        dangerBarPolygon.InnerRadius = PieInnerRadius;
-
-        outerPolygon.InnerRadius = PieOuterRadius + PieOutlineThickness * 2 + OuterPieOutlineThickness;
-        outerPolygon.OuterRadius = outerPolygon.InnerRadius + OuterPieThickness;
-
-        outerBackPolygon.InnerRadius = outerPolygon.InnerRadius - OuterPieOutlineThickness;
-        outerBackPolygon.OuterRadius = outerPolygon.OuterRadius + OuterPieOutlineThickness;
         
         Add(new BeforeRenderHook(RenderBuffer));
     }
@@ -114,6 +98,40 @@ public class StaminaBarEntity : Entity {
         StaminaOverdraftColor = Calc.HexToColor(StaminaBar.Settings.Color.StaminaOverdraft);
         StaminaDangerBarColor = Calc.HexToColor(StaminaBar.Settings.Color.StaminaDangerBar) * 0.2f;
         StaminaOverclockColor = Calc.HexToColor(StaminaBar.Settings.Color.StaminaOverclock);
+        
+        PieOuterRadius = StaminaBar.Settings.Size.PieOuterRadius;
+        PieInnerRadius = StaminaBar.Settings.Size.PieInnerRadius;
+        PieOutlineThickness = StaminaBar.Settings.Size.PieOutlineThickness;
+        OuterPieThickness = StaminaBar.Settings.Size.OuterPieThickness;
+        OuterPieOutlineThickness = StaminaBar.Settings.Size.OuterPieOutlineThickness;
+    
+        backPolygon.OuterRadius = PieOuterRadius + PieOutlineThickness;
+        backPolygon.InnerRadius = PieInnerRadius - PieOutlineThickness;
+
+        fillPolygon.OuterRadius = PieOuterRadius;
+        fillPolygon.InnerRadius = PieInnerRadius;
+            
+        refillPolygon.OuterRadius = PieOuterRadius;
+        refillPolygon.InnerRadius = PieInnerRadius;
+
+        dangerBarPolygon.OuterRadius = PieOuterRadius;
+        dangerBarPolygon.InnerRadius = PieInnerRadius;
+
+        outerPolygon.InnerRadius = PieOuterRadius + PieOutlineThickness * 2 + OuterPieOutlineThickness;
+        outerPolygon.OuterRadius = outerPolygon.InnerRadius + OuterPieThickness;
+
+        outerBackPolygon.InnerRadius = outerPolygon.InnerRadius - OuterPieOutlineThickness;
+        outerBackPolygon.OuterRadius = outerPolygon.OuterRadius + OuterPieOutlineThickness;
+
+        if (PieResolution != StaminaBar.Settings.Size.PieResolution) {
+            PieResolution = StaminaBar.Settings.Size.PieResolution;
+            
+            backPolygon.SetResolution(PieResolution);
+            fillPolygon.SetResolution(PieResolution);
+            refillPolygon.SetResolution(PieResolution);
+            outerPolygon.SetResolution(PieResolution);
+            outerBackPolygon.SetResolution(PieResolution);
+        }
     }
 
     private void UpdateAnimations() {
@@ -241,7 +259,6 @@ public class StaminaBarEntity : Entity {
         
         UpdateAnimations();
         if (Visible && alpha > 0f) {
-            UpdateConfig();
             UpdatePolygons();
         }
         
@@ -310,6 +327,11 @@ public class StaminaBarEntity : Entity {
     }
 
     private void RenderBuffer() {
+        UpdateConfig();
+        
+        if (buffer != null && buffer.Width != BufferSize)
+            buffer.Dispose();
+        
         if (buffer is null || buffer.IsDisposed)
             buffer = VirtualContent.CreateRenderTarget("staminabar-buffer", BufferSize, BufferSize);
 
@@ -317,7 +339,7 @@ public class StaminaBarEntity : Entity {
         Engine.Graphics.GraphicsDevice.Clear(Color.Transparent);
 
         var pos = new Vector2(BufferSize / 2);
-        var scale = (float) BufferUpscaleFactor;
+        var scale = (float) StaminaBar.Settings.UpscaleFactor;
         backPolygon.Draw(pos, scale);
         refillPolygon.Draw(pos, scale);
         fillPolygon.Draw(pos, scale);
@@ -389,7 +411,7 @@ public class StaminaBarEntity : Entity {
             drawPos, null,
             color,
             0f, 
-            new Vector2(BufferSize/2), size / BufferUpscaleFactor,
+            new Vector2(BufferSize/2), size / StaminaBar.Settings.UpscaleFactor,
             SpriteEffects.None, 0f
         );
     }
