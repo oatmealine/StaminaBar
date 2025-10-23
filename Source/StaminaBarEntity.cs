@@ -85,6 +85,8 @@ public class StaminaBarEntity : Entity {
 
         outerBackPolygon.InnerRadius = outerPolygon.InnerRadius - OuterPieOutlineThickness;
         outerBackPolygon.OuterRadius = outerPolygon.OuterRadius + OuterPieOutlineThickness;
+        
+        Add(new BeforeRenderHook(RenderBuffer));
     }
 
     // the intended purpose for this is to prevent the little "stutter" when transitioning between rooms with "always
@@ -100,7 +102,7 @@ public class StaminaBarEntity : Entity {
     }
     */
 
-    private void UpdateColors() {
+    private void UpdateConfig() {
         BackColor = Calc.HexToColor(StaminaBar.Settings.Color.Back);
         OverlayColor = Calc.HexToColor(StaminaBar.Settings.Color.Overlay);
         StaminaColor = Calc.HexToColor(StaminaBar.Settings.Color.Stamina);
@@ -239,7 +241,7 @@ public class StaminaBarEntity : Entity {
         
         UpdateAnimations();
         if (Visible && alpha > 0f) {
-            UpdateColors();
+            UpdateConfig();
             UpdatePolygons();
         }
         
@@ -311,7 +313,6 @@ public class StaminaBarEntity : Entity {
         if (buffer is null || buffer.IsDisposed)
             buffer = VirtualContent.CreateRenderTarget("staminabar-buffer", BufferSize, BufferSize);
 
-        var prevRenderTargets = Engine.Graphics.GraphicsDevice.GetRenderTargets();
         Engine.Graphics.GraphicsDevice.SetRenderTarget(buffer);
         Engine.Graphics.GraphicsDevice.Clear(Color.Transparent);
 
@@ -325,8 +326,6 @@ public class StaminaBarEntity : Entity {
             outerBackPolygon.Draw(pos, scale);
             outerPolygon.Draw(pos, scale);
         }
-        
-        Engine.Graphics.GraphicsDevice.SetRenderTargets(prevRenderTargets);
     }
 
     private static Vector2 GetBarOffset() {
@@ -352,8 +351,6 @@ public class StaminaBarEntity : Entity {
         } else {
             Tag = TagsExt.SubHUD;
         }
-        
-        RenderBuffer();
 
         var level = SceneAs<Level>();
         var playerPos = WorldToScreen(Player.Position, level);
