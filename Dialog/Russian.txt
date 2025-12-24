@@ -1,0 +1,56 @@
+modoptions_staminabar_display=Внешний вид
+modoptions_staminabar_vanity=Украшения
+
+modoptions_staminabar_squish_desc=Насколько сжать полоску стамины по отношению сжатия игрока{n}(0 - никак, 10 - следовать масштабу игрока)
+modoptions_staminabar_squishoncrouch_desc=Сжать полоску при крауче{n}Помогает видеть, в крауче вы или нет, при тяжелом крауч геймплее
+modoptions_staminabar_showlosses=Траты стамины
+modoptions_staminabar_showlosses_desc=Серьёзные траты стамины (напр. при клаймбджампах) будут подсвечены
+modoptions_staminabar_showrefunds=Возвращения стамины
+modoptions_staminabar_showrefunds_desc=Возвращенная стамина (напр. при воллбустах) будет подсвечена
+modoptions_staminabar_showoverdraft=Перерасходованная стамина
+modoptions_staminabar_showoverdraft_desc="Перерасходованная" означает стамину, которая опустилась ниже 0.0
+modoptions_staminabar_showoverclock=Оверклок стамина
+modoptions_staminabar_showoverclock_desc="Оверклок" стамина - возвращённая сверх предела (напр. при воллбустах)
+modoptions_staminabar_showdanger=Подсветить опасную зону
+modoptions_staminabar_showdanger_desc=Ниже 20 стамины, спрайт игрока начинает светиться красным и Мэдлин становится "уставшей"
+modoptions_staminabar_upscalefactor_desc=Насколько увеличить полоску до уменьшения её обратно, для эффекта по типу FXAA сглаживания
+
+modoptions_staminabar_overlaycolor_desc=Все "украшения" будут окрашены в этот цвет
+modoptions_staminabar_staminaflashcolor_desc=Цвет вспышки при полном восстановлении стамины
+modoptions_staminabar_staminadangercolor_desc=Цвет, когда стамина < 20
+modoptions_staminabar_staminadangerrefundcolor_desc=Цвет для возвращений, когда стамина < 20
+
+modoptions_staminabar_enabled=Включено
+modoptions_staminabar_alwaysvisible=Всегда показывать
+modoptions_staminabar_position=Позиция
+modoptions_staminabar_alignment=Расположение
+modoptions_staminabar_offsetx=Смещение по Х
+modoptions_staminabar_offsety=Смещение по У
+modoptions_staminabar_size=Размер
+modoptions_staminabar_pieouterradius=Внешний радиус круга
+modoptions_staminabar_pieinnerradius=Внутренний радиус круга
+modoptions_staminabar_pieresolution=Разрешение круга
+modoptions_staminabar_pieoutlinethickness=Толщина обводки круга
+modoptions_staminabar_outerpiethickness=Толщина внешнего круга
+modoptions_staminabar_outerpieoutlinethickness= Толщина обводки внешнего круга
+
+modoptions_staminabar_color=Цвет
+modoptions_staminabar_back=Задник
+modoptions_staminabar_overlay=Оверлей
+modoptions_staminabar_stamina=Стамина
+modoptions_staminabar_staminaflash=Мигание стамины
+modoptions_staminabar_staminarefund=Возврат стамины
+modoptions_staminabar_staminaloss=Трата стамины
+modoptions_staminabar_staminadanger=Опасный уровень
+modoptions_staminabar_staminadangerrefund=Возврат при опасном уровне
+modoptions_staminabar_staminaoverdraft=Перерасходованная стамина
+modoptions_staminabar_staminadangerbar=Полоска опасного уровня
+modoptions_staminabar_staminaoverclock=Оверклок стамины
+modoptions_staminabar_squish=Сжатие
+modoptions_staminabar_squishfactor=Фактор сжатия
+modoptions_staminabar_squishoncrouch=Сжатие при крауче
+
+modoptions_staminabar_bunny=Кролик
+modoptions_staminabar_kitty=Котик
+modoptions_staminabar_fairy=Фея
+modoptions_staminabar_moth=Моль
