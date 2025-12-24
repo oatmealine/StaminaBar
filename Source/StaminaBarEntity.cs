@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Monocle;
 using MonoMod.Utils;
 using Vector2 = Microsoft.Xna.Framework.Vector2;
+using Vector3 = Microsoft.Xna.Framework.Vector3;
 
 namespace Celeste.Mod.StaminaBar;
 
@@ -48,6 +49,7 @@ public class StaminaBarEntity : Entity {
     private float alpha = 0f;
     private float flash = 0f;
     private Vector2 squish = new(0f);
+    private Vector2 lagScale = new(0f);
 
     private float lastStamina = MaxStamina;
     
@@ -172,13 +174,18 @@ public class StaminaBarEntity : Entity {
         
         // squish the bar w/ the player's movements
         
-        var targetSquish = Vector2.Lerp(Vector2.One, Player.Sprite.Scale.Abs(), (float)StaminaBar.Settings.Squish.SquishFactor / 10);
+        var targetSquish = Vector2.One;
         if (Player.Ducking && StaminaBar.Settings.Squish.SquishOnCrouch) {
             targetSquish.X *= 1.1f;
-            targetSquish.Y *= 0.8f;
+            targetSquish.Y *= 0.75f;
         }
-        if (deadOrRespawning) targetSquish = Vector2.One;
+        var targetLagScale = Vector2.Lerp(Vector2.One, Player.Sprite.Scale.Abs(), (float)StaminaBar.Settings.Squish.SquishFactor / 10);
+        if (deadOrRespawning) {
+            targetSquish = Vector2.One;
+            targetLagScale = Vector2.One;
+        }
         squish = float.Pow(32f, -Engine.DeltaTime * 16f) * (squish - targetSquish) + targetSquish;
+        lagScale = float.Pow(32f, -Engine.DeltaTime * 16f) * (lagScale - targetLagScale) + targetLagScale;
         
         // show/hide stamina bar
         
@@ -265,67 +272,6 @@ public class StaminaBarEntity : Entity {
         lastStamina = stamina;
     }
 
-    private static EverestModuleSettings settings;
-    private static PropertyInfo modSettingProp;
-    private static PropertyInfo cameraSettingProp;
-    private static Func<Vector2> getCameraPosDelegate;
-    private static bool getCameraPosFailed = false;
-
-    // go my reflection soup
-    private static Func<Vector2> GetGetCameraPos() {
-        if (!Everest.Loader.TryGetDependency(StaminaBar.MotionSmoothingMod, out var module))
-            return null; // not loaded
-        
-        var asm = module.GetType().Assembly;
-
-        settings = module._Settings;
-        modSettingProp = settings.GetType().GetProperty("Enabled", BindingFlags.Public | BindingFlags.Instance);
-        var modSettingValue = modSettingProp?.GetValue(settings);
-        if (modSettingValue is null) return null;
-        cameraSettingProp = settings.GetType().GetProperty("UnlockCamera", BindingFlags.Public | BindingFlags.Instance);
-        var cameraSettingValue = cameraSettingProp?.GetValue(settings);
-        if (cameraSettingValue is null) return null;
-        
-        var unlockedCameraSmoother = asm.GetType("Celeste.Mod.MotionSmoothing.Smoothing.Targets.UnlockedCameraSmoother");
-        var getCameraPositionMethod = unlockedCameraSmoother?.GetMethod("GetSmoothedCameraPosition", BindingFlags.Public | BindingFlags.Static);
-        var getCameraPositionDelegate = getCameraPositionMethod?.CreateDelegate(typeof(Func<Vector2>));
-        if (getCameraPositionDelegate is null)
-            return null; // prolly changed the internals
-
-        return getCameraPositionDelegate as Func<Vector2>;
-    } 
-    
-    private static Vector2 GetCameraPos(Level level) {
-        var camPos = level.Camera.Position.Floor();
-
-        if (getCameraPosFailed) return camPos;
-        if (getCameraPosDelegate is null) {
-            getCameraPosDelegate = GetGetCameraPos();
-            if (getCameraPosDelegate is null) {
-                getCameraPosFailed = true;
-                return camPos;
-            } 
-        }
-
-        if (!((bool)modSettingProp.GetValue(settings)! && (bool)cameraSettingProp.GetValue(settings)!)) {
-            return camPos; // disabled in settings
-        }
-        
-        var res = getCameraPosDelegate.DynamicInvoke()!;
-        return (Vector2)res;
-    }
-
-    private static Vector2 WorldToScreen(Vector2 worldPos, Level level) {
-        var camPos = GetCameraPos(level);
-        var screenPos = worldPos - camPos;
-        if (SaveData.Instance != null && SaveData.Instance.Assists.MirrorMode)
-            screenPos.X = 320f - screenPos.X;
-        screenPos.X *= 6f;
-        screenPos.Y *= 6f;
-
-        return screenPos;
-    }
-
     private void RenderBuffer() {
         UpdateConfig();
         
@@ -360,6 +306,22 @@ public class StaminaBarEntity : Entity {
             _ => default
         };
     }
+
+    // not a big fan of XNA
+    private static Matrix translate(float xy) => Matrix.CreateTranslation(xy, xy, 0f);
+    private static Matrix translate(float x, float y) => Matrix.CreateTranslation(x, y, 0f);
+    private static Matrix translate(Vector2 v) => Matrix.CreateTranslation(v.X, v.Y, 0f);
+    private static Matrix scale(float xy) => Matrix.CreateScale(xy, xy, 1f);
+    private static Matrix scale(float x, float y) => Matrix.CreateScale(x, y, 1f);
+    private static Matrix scale(Vector2 v) => Matrix.CreateScale(v.X, v.Y, 1f);
+
+    private static Vector3 getScale(Matrix m) {
+        return new Vector3(
+            (new Vector3(m.M11, m.M12, m.M13)).Length(),
+            (new Vector3(m.M21, m.M22, m.M23)).Length(),
+            (new Vector3(m.M31, m.M32, m.M33)).Length()
+        );
+    }
     
     public override void Render() {
         if (!StaminaBar.Settings.Enabled) return;
@@ -375,24 +337,37 @@ public class StaminaBarEntity : Entity {
         }
 
         var level = SceneAs<Level>();
-        var playerPos = WorldToScreen(Player.Position, level);
+        var playerPos = level.WorldToScreen(Player.Position);
         var offset = GetBarOffset();
+
+        var m = Matrix.Identity;
         
-        var drawPos = Vector2.Zero;
-        drawPos += new Vector2(46f);
-        drawPos += new Vector2(PieOuterRadius / 2) * squish;
-        drawPos *= offset;
-        drawPos += new Vector2(0f, -50f);
+        m *= translate(StaminaBar.Settings.Position.OffsetX, StaminaBar.Settings.Position.OffsetY);
+        
+        m *= scale(1f - (1f - Ease.SineOut(alpha)) * .5f);
+        
+        m *= scale(lagScale);
+        
+        m *= translate(PieOuterRadius / 2);
+        m *= translate(46f);
+        
+        m *= translate(-PieOuterRadius * 2, -PieOuterRadius);
+        m *= scale(squish);
+        m *= translate(PieOuterRadius * 2, PieOuterRadius);
+        
         if (StaminaBar.Settings.Position.Alignment == StaminaBarSettings.BarPosition.HUD) {
-            drawPos += new Vector2(12, 80);
+            m *= translate(12, 80);
         } else {
-            drawPos += playerPos;   
+            m *= scale(offset);
+            m *= translate(0f, -50f); // center it on the player
+            m *= scale(level.Zoom);
+            m *= translate(playerPos);
         }
-        drawPos += new Vector2(StaminaBar.Settings.Position.OffsetX, StaminaBar.Settings.Position.OffsetY);
         
-        var size = Vector2.One;
-        size *= (1f - (1f - Ease.SineOut(alpha)) * .5f);
-        size *= squish;
+        var drawPos = new Vector2(m.Translation.X, m.Translation.Y);
+        var size3 = getScale(m);
+        var size = new Vector2(size3.X, size3.Y);
+        //var size = Vector2.One;
 
         var color = Color.White * Ease.SineOut(alpha);
         var sprColor = OverlayColor * Ease.SineOut(alpha);  
@@ -405,7 +380,7 @@ public class StaminaBarEntity : Entity {
             GFX.Gui["StaminaBar/fairymode"].Draw(drawPos, new Vector2(128f), sprColor, size * PieOuterRadius/52f);
         if (StaminaBar.Settings.Moth)
             GFX.Gui["StaminaBar/mothmode"].Draw(drawPos, new Vector2(128f), sprColor, size * PieOuterRadius/52f);
-
+        
         Draw.SpriteBatch.Draw(
             buffer, 
             drawPos, null,
