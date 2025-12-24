@@ -40,6 +40,7 @@ public class StaminaBarEntity : Entity {
     
     public Player Player;
     private float stamina = MaxStamina;
+    private float currentMaxStamina = MaxStamina;
 
     private float refillStamina = 0f;
     private float minStamina = MaxStamina;
@@ -161,13 +162,13 @@ public class StaminaBarEntity : Entity {
         
         // flash the bar when stamina is regained
         
-        var fullStamina = stamina == MaxStamina;
-        var wasFullStamina = lastStamina == MaxStamina;
+        var fullStamina = stamina == currentMaxStamina;
+        var wasFullStamina = lastStamina == currentMaxStamina;
         if (fullStamina && !wasFullStamina) {
             flash = 1f;
             refillStamina = 0f;
             fadeDuration = Math.Max(fadeDuration, FadeDurationBase + FadeDurationVariance * (1f - minStamina / MaxStamina)); 
-            minStamina = MaxStamina;
+            minStamina = currentMaxStamina;
         }
         
         flash = Calc.Approach(flash, 0f, Engine.DeltaTime / FlashDuration);
@@ -256,12 +257,13 @@ public class StaminaBarEntity : Entity {
             var player = Scene.Tracker.GetEntity<Player>();
             if (player is null) {
                 RemoveSelf();
-                return;                
+                return;
             }
             Player = player;
         }
 
         if (!Player.Dead) stamina = Player.Stamina;
+        currentMaxStamina = (int) (ExtendedVariantsImports.GetCurrentVariantValue?.Invoke("Stamina") ?? Player.ClimbMaxStamina);
         minStamina = Math.Min(minStamina, stamina);
         
         UpdateAnimations();

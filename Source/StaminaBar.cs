@@ -1,4 +1,5 @@
 ﻿using System;
+using MonoMod.ModInterop;
 
 namespace Celeste.Mod.StaminaBar;
 
@@ -19,6 +20,7 @@ public class StaminaBar : EverestModule {
 
     public override void Load() {
         On.Celeste.Level.LoadLevel += LevelOnLoadLevel;
+        typeof(ExtendedVariantsImports).ModInterop();
     }
 
     public override void Unload() {
