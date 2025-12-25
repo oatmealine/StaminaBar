@@ -263,7 +263,7 @@ public class StaminaBarEntity : Entity {
         }
 
         if (!Player.Dead) stamina = Player.Stamina;
-        currentMaxStamina = (int) (ExtendedVariantsImports.GetCurrentVariantValue?.Invoke("Stamina") ?? Player.ClimbMaxStamina);
+        currentMaxStamina = (int) (float) (ExtendedVariantsImports.GetCurrentVariantValue?.Invoke("Stamina") ?? Player.ClimbMaxStamina);
         minStamina = Math.Min(minStamina, stamina);
         
         UpdateAnimations();
